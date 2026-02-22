@@ -1,5 +1,5 @@
-const express = require('express');
-const http = require('http');
+const express = require("express");
+const http = require("http");
 const { Server } = require("socket.io");
 
 const app = express();
@@ -7,20 +7,21 @@ const server = http.createServer(app);
 
 const io = new Server(server);
 
-io.on('connection', (socket) => {
-  console.log('a user connected', socket.id);
+io.on("connection", (socket) => {
+  console.log("a user connected", socket.id);
 
+  socket.on("from client", () => {
+    console.log("event coming from client");
+  });
 
-  setInterval(() => {
-    socket.emit("hello");
-  }, 2000);
-  socket.on('from client',()=>{
-    console.log('event coming from client');
+  socket.on('msg_send',(data)=>{
+    console.log(data);
+    io.emit('msg_rcvd', data);
   })
 });
 
-app.use('/', express.static(__dirname + "/public"));
+app.use("/", express.static(__dirname + "/public"));
 
-server.listen(3000, ()=>{
-    console.log('Server Started');
-})
+server.listen(3000, () => {
+  console.log("Server Started");
+});
