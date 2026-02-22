@@ -8,11 +8,18 @@
   <body>
     <h1>Chat App</h1>
     <input id="startchat" data-roomid="<%= id %>" type="hidden"></button>
-    <input type="text" id="username" placeholder="Enter your username">
+    <input type="text" id="username" placeholder="username...">
     <input type="text" id="newmsg" placeholder="Enter a message...">
+    <span id="typing">typing...</span>
     <button id="btn">Send</button>
-    <ul id="msglist"></ul>
     
+    <ul id="msglist">
+      <% for(let i=0; i<chats.length; i++) {%>
+          <li>
+            <%= chats[i].user%> : <%= chats[i].content%>
+          </li>
+      <% } %>
+    </ul>
     
     
     <script src="/socket.io/socket.io.js"></script>
@@ -24,8 +31,11 @@
 
       let btn = document.getElementById("btn");
       let inputMsg = document.getElementById("newmsg");
+      let spanTyping = document.getElementById('typing');
+      spanTyping.style.display='none';
       let username = document.getElementById('username');
       let msgList = document.getElementById("msglist");
+      let typingId = null;
 
         socket.emit('join_room',{
         roomid: startchat.getAttribute('data-roomid')
@@ -43,6 +53,23 @@
         limsg.innerText = `${data.username}: ${data.msg}`;
         msgList.appendChild(limsg);
       });
+
+      socket.on('someone_typing', (data)=>{
+        clearTimeout(typingId);
+        typingId = setTimeout(() => {
+          spanTyping.style.display = 'none';
+        }, 1000);
+        spanTyping.style.display = 'block';
+        
+      })
+
+      inputMsg.addEventListener('keypress', function(e){
+        // typing = true
+        socket.emit('typing',{
+          roomid:startchat.getAttribute('data-roomid'),
+        })
+
+      })
     </script>
   </body>
 </html>
